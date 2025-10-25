@@ -55,20 +55,15 @@ class Home
         // $result= $user->findAll();
         // show($result);
 
-
-        $user = new User();
-        if ($user->validate($_POST)){
-            $user->insert($_POST);
-            redirect("login");
-        }
-
-       // $user->signup($_POST)
-        $data['user']= $user;
-       $this->view('home',$data);
+//        $ses = new \Model\Session();
+//        if (!$ses->is_logged_in()){
+//            redirect('login');
+//        }
+       $this->view('home');
     }
 
     // public function edit($a ='',$b ='',$c =''){
-    //   show('from edit metod');
+    //   show('from edit method');
     //    $this->view('home');
     // }
 }

@@ -27,7 +27,7 @@ private function splitURL(){
     }
 
     $className = '\\Controller\\' . $this->controller;
-    $controller = new $className();
+    $controller = new $className;
 
     /* select method */
     if(!empty($url[1])){
