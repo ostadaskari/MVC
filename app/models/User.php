@@ -12,6 +12,12 @@ class User
     protected $primaryKey = 'id';
 
     protected $loginUniqueColumn = 'email';
+    protected $allowedColumns = [
+        'username',
+        'email',
+        'password',
+    ];
+
 /** *******************************************
  * VALIDATION RULES
  *
@@ -27,13 +33,25 @@ class User
  * 'alpha_symbol',
  * 'alpha_numeric',
  *********************************************/
-    protected $allowedColumns = [
-        'username',
-        'email',
-        'password',
+
+
+    protected $onInsertValidationRules = [
+        'email' => [
+            'email',
+            'unique',
+            'required',
+        ],
+        'username' => [
+            'alpha_space',
+            'required',
+        ],
+        'password' => [
+            'longer_than_8_characters',
+            'required',
+        ],
     ];
 
-    protected $validationRules = [
+    protected $onUpdateValidationRules = [
         'email' => [
             'email',
             'unique',

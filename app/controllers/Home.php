@@ -3,6 +3,8 @@
 namespace Controller;
 
 defined('ROOTPATH') OR exit('Access Denied');
+
+use Imagick;
 use \Model\User;
 class Home 
 
@@ -59,7 +61,16 @@ class Home
 //        if (!$ses->is_logged_in()){
 //            redirect('login');
 //        }
-       $this->view('home');
+
+
+        $file = 'baner-4.jpg';
+        $file = 'PM-CT13.jpg';
+
+
+        $data['file'] = $file;
+        $image = new \Model\Image();
+        $data['thumbnail'] = $image->getThumbnail($file,200,80);
+       $this->view('home',$data);
     }
 
     // public function edit($a ='',$b ='',$c =''){

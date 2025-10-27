@@ -137,8 +137,13 @@ Trait Model
     public function validate($data){
         $this->errors = [];
 
-        if (!empty($this->validationRules)){
-            foreach($this->validationRules as $column => $rules){
+        if (!empty($this->primaryKey) && !empty($data[$this->primaryKey])) {
+            $validationRules = $this->onUpdateValidationRules;
+        }else{
+            $validationRules = $this->onInsertValidationRules;
+        }
+        if (!empty($validationRules)){
+            foreach($validationRules as $column => $rules){
 
                 // CRITICAL FIX: Skip validation if the data key is not present,
                 // preventing 'Undefined array key' warnings on GET requests.
