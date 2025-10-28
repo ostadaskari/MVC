@@ -16,9 +16,6 @@ class Thunder
         $mode       = $argv[1] ?? null;
         $param1     = $argv[2] ?? null;
 
-
-
-
         switch($mode) {
             case 'db:create':
                 /** check if param1 is empty */
@@ -69,10 +66,31 @@ class Thunder
                 break;
         }
     }
-    public function migrate()
+
+    public function list($argv)
     {
-        echo "\n\r this is the migrete function\n\r";
+        $mode = $argv[1] ?? null;
+
+        switch ($mode) {
+            case 'list:migrations':
+                 $folder = 'app'.DS.'migrations'.DS;
+                 if (!file_exists($folder)) {
+                     die("\n\rthere are no migrations\n\r");
+                 }
+                 $files = glob($folder.'*.php');
+                 echo "\n\r Migration files:\n\r";
+                 foreach ($files as $file) {
+                     echo basename($file). " \n\r";
+                 }
+                break;
+
+            default:
+                //
+                break;
+        }
     }
+
+
     public function make($argv)
     {
 
@@ -126,7 +144,26 @@ class Thunder
                 }
                 break;
             case 'make:migration':
-                //dl
+                $folder = 'app'.DS.'migrations'.DS;
+                if (!file_exists($folder)) {
+                    mkdir($folder, 0777, true);
+                }
+
+                $filename = $folder . date("jS_M_Y_H_i_s_") . ucfirst($classname) . '.php';
+                if (file_exists($filename)) {
+                    die("\n\rThat migration file already exists\n\r");
+                }
+
+                $sample_file = file_get_contents('app'.DS.'thunder'.DS.'samples'.DS.'migration_sample.php');
+                $sample_file = preg_replace('/\{CLASSNAME\}/', ucfirst($classname), $sample_file);
+                $sample_file = preg_replace('/\{classname\}/', strtolower($classname), $sample_file);
+
+
+                if (file_put_contents($filename, $sample_file)) {
+                    die("\n\r Migration file created: " .basename($filename)."\n\r");
+                }else{
+                    die("\n\rFailed to create Migration file due to an error\n\r");
+                }
                 break;
             case 'make:seeder':
                 //df
@@ -138,26 +175,74 @@ class Thunder
         }
     }
 
+    public function migrate($argv)
+    {
+        $mode = $argv[1] ?? null;
+        $filename = $argv[2] ?? null;
+        $filename = "app".DS."migrations".DS.$filename;
+
+        if (file_exists($filename)) {
+            require $filename;
+
+            preg_match("/[a-zA-Z]+\.php$/",$filename,$match);
+            $classname = str_replace('.php','',$match[0]);
+
+            $myclass = new ("\Thunder\\$classname")();
+
+            switch($mode) {
+                case 'migrate':
+                    $myclass->migrate();
+                    echo "\n\rThat migration successful.table is created\n\r";
+
+                    break;
+
+                case 'migrate:rollback':
+                    $myclass->down();
+                    echo "\n\r table removed \n\r";
+
+                    break;
+
+                case 'migrate:refresh':
+                    $myclass->down();
+                    $myclass->up();
+                    echo "\n\rTable is refreshed \n\r";
+
+                    break;
+
+                default:
+                    $myclass->migrate();
+                    break;
+            }
+        }else{
+            die("\n\r migration file could not be found !\n\r");
+        }
+
+        echo "\n\r migrate successfully : ".basename($filename)." !!!\n\r";
+    }
+
     public function help()
     {
         echo "
             
             Thunder v$this->version Command line tool
             
-            Database 
+        Database 
             db:create            Create a new database schema.
             db:seed              Runs the specified database seeder to poplate known data into the database.
             db:table             retrieves information on the selected database table.
             db:drop              Drop/delete a database table.
-            migrate              Locates and runs a migration from the specified plugin folder.
-            migrate:refresh      Does a rollback followed by a latest to refresh the current state of the database.
-            migrate:rollback     Runs the 'down' method for a  migration the specified plugin folder.
+            migrate              Locates and runs a migration file.
+            migrate:refresh      Runs the 'down' and then 'up' method for a migration file.
+            migrate:rollback     Runs the 'down' method for a  migration file.
             
-            Generators
+        Generators
             make:controller       Create a new controller file.
             make:migration        Create a new migration file.
             make:model            Create a new model file.
             make:seeder           Create a new seeder file.
+            
+        Other
+            list:migrations       Display List all migrations available.
                 
         ";
     }
